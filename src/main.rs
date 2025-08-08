@@ -1,7 +1,7 @@
 
 use std::env;
 use std::fs;
-
+use colored::*;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path};
 use std::process::{Command, Stdio};
@@ -175,7 +175,26 @@ impl Validator for ShellCompleter {
 }
 
 impl Helper for ShellCompleter {}
-
+fn path_coloring()->String{
+    let current_path=env::current_dir();
+        let curr=match current_path{
+            Ok(current_path)=>{
+                current_path
+            }
+            Err(e)=>{
+                panic!("this shit sucks")
+            }
+        };
+    let username=whoami::username().green().to_string();
+    
+    let curr_str=curr.to_str().expect("what the helly");
+    let mut pp=String::from("");
+    pp.push_str(&username);
+    pp.push(':');
+    pp.push_str(&curr_str.blue().to_string());
+    pp.push('$');
+    pp
+}
 fn main() {
     let config = Config::builder()
         .auto_add_history(true)
@@ -204,7 +223,9 @@ fn main() {
     let built_in = ["cd", "pwd", "echo", "exit", "type"];
 
     loop {
-        let readline = rl.readline("$ ");
+        
+        let pp=path_coloring();
+        let readline = rl.readline(&pp);
         let line = match readline {
             Ok(line) => line,
             Err(ReadlineError::Interrupted) => {
